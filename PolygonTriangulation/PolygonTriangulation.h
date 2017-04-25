@@ -1,38 +1,42 @@
 #pragma once
-#include <SDL/SDL.h>
-#include <GL/glew.h>
-#include <vector>
-
 #include <DCEL.h>
+#include <vector>
 #include <queue>
 
-enum class ProgramState{RUNNING, EXIT};
+#include "BinarySearchTree.h"
+
+enum EventType {
+	START, END, SPLIT, MERGE, REGULAR
+};
+
+class Event {
+public:
+	EventType type;
+	Vertex *vertex;
+};
+
+class Status {
+public:
+	Edge *edge;
+	Vertex *helper;
+};
 
 class PolygonTriangulation {
 public:
 	PolygonTriangulation();
 	~PolygonTriangulation();
 
-	void run();
+	void makeMonotone();
 
 private:
-	SDL_Window* window;
-	int screenWidth;
-	int screenHeight;
-	ProgramState programState;
+	std::vector<Vertex*> vertices;
+	std::priority_queue<Event*> events;
+	BinarySearchTree<Status*> status;
 
-	float time;
-
-	Uint32 oldTime, currentTime;
-	float deltaTime;
-
-	void initSystems();
-	void gameLoop();
-	void processInput();
-	void drawGame();
-
-	std::priority_queue<Vertex> vertices;
-
-	void makeMonotone();
+	void checkVertexHandler(Event *event);
+	void handleStartVertex(Vertex *vertex);
+	void handleEndVertex(Vertex *vertex);
+	void handleSplitVertex(Vertex *vertex);
+	void handleMergeVertex(Vertex *vertex);
+	void handleRegularVertex(Vertex *vertex);
 };
-

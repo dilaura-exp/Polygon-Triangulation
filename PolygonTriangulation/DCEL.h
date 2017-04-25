@@ -3,7 +3,8 @@
 
 struct Edge;
 
-struct Coordinates {
+class Coordinates {
+public:
 	float x;
 	float y;
 
@@ -13,20 +14,44 @@ struct Coordinates {
 	}
 };
 
-struct Vertex {
-	Coordinates coordinates;
+class Vertex {
+public:
+	Coordinates *coordinates;
 	Edge *incidentEdge;
+
+	Vertex(Coordinates *coordinates, Edge *incidentEdge) {
+		this->coordinates = coordinates;
+		this->incidentEdge = incidentEdge;
+	}
+	bool operator < (const Vertex *vertex2) {
+		if (coordinates->y != vertex2->coordinates->y) {
+			return coordinates->y < vertex2->coordinates->y;
+		}
+		else {
+			return coordinates->x > vertex2->coordinates->x;
+		}
+	}
 };
 
-struct Face {
+class Face {
+public:
 	std::vector<Edge*> edges;
 };
 
-struct Edge {
+class Edge {
+public:
 	Vertex *originVertex;
 	Edge *twinEdge;
 	Face *incidentFace;
 	Edge *next;
 	Edge *previous;
+
+	Edge(Vertex *originVertex, Edge *twinEdge, Face *incidentFace, Edge *next, Edge *previous) {
+		this->originVertex = originVertex;
+		this->twinEdge = twinEdge;
+		this->incidentFace = incidentFace;
+		this->next = next;
+		this->previous = previous;
+	}
 };
 

@@ -69,11 +69,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\Documents\Visual Studio 2015\Projects\PolygonTriangulation\PolygonTriangulation;$(SolutionDir)deps/include/;$(IncludePath)</IncludePath>
+    <IncludePath>K:\Git Projects\Polygon Triangulation\PolygonTriangulation;$(SolutionDir)deps/include/;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)deps/lib/;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)deps/include;$(IncludePath)</IncludePath>
+    <IncludePath>K:\Git Projects\Polygon Triangulation\PolygonTriangulation;$(SolutionDir)deps/include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)deps/lib/;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -97,7 +97,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,7 +134,7 @@
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="IOManager.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="PolygonTriangulation.cpp" />
+    <ClCompile Include="MainProgram.cpp" />
     <ClCompile Include="picoPNG.cpp" />
     <ClCompile Include="Random.cpp" />
   </ItemGroup>
@@ -144,7 +144,7 @@
     <ClInclude Include="GLTexture.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="IOManager.h" />
-    <ClInclude Include="PolygonTriangulation.h" />
+    <ClInclude Include="MainProgram.h" />
     <ClInclude Include="picoPNG.h" />
     <ClInclude Include="Random.h" />
   </ItemGroup>
