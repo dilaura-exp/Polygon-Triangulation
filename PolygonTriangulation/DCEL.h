@@ -1,6 +1,10 @@
 #pragma once
 #include <vector>
 
+extern enum EventType {
+	REGULAR, START, END, SPLIT, MERGE
+};
+
 class Edge;
 
 class Coordinates {
@@ -18,10 +22,20 @@ class Vertex {
 public:
 	Coordinates *coordinates;
 	Edge *incidentEdge;
+	EventType type;
 
 	Vertex(Coordinates *coordinates, Edge *incidentEdge) {
 		this->coordinates = coordinates;
 		this->incidentEdge = incidentEdge;
+		type = EventType::REGULAR;
+	}
+	bool operator < (const Vertex& vertex2) const {
+		if (coordinates->y != vertex2.coordinates->y) {
+			return coordinates->y < vertex2.coordinates->y;
+		}
+		else {
+			return coordinates->x > vertex2.coordinates->x;
+		}
 	}
 };
 

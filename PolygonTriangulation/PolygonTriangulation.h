@@ -7,10 +7,6 @@
 
 #include "BinarySearchTree.h"
 
-enum EventType {
-	REGULAR, START, END, SPLIT, MERGE
-};
-
 class Event {
 public:
 	EventType type;
@@ -76,7 +72,7 @@ private:
 	BinarySearchTree<Status*> status;
 	std::vector<TurnVertex*> turnVertices;
 
-	EventType determineVertexType(TurnVertex *turnVertex);
+	EventType determineVertexType(Vertex &vertex, Vertex &previous, Vertex &next);
 	void checkVertexHandler(Event &event);
 	void handleStartVertex(Vertex *vertex);
 	void handleEndVertex(Vertex *vertex);

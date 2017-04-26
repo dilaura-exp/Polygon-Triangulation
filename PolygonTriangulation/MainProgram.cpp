@@ -31,7 +31,7 @@ void MainProgram::run() {
 void MainProgram::initSystems() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	window = SDL_CreateWindow("Kecerdasan Komputasional", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Komputasional Geometri", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, SDL_WINDOW_OPENGL);
 	if (window == nullptr) {
 		fatalError("SDL Window could not be created.");
 	}

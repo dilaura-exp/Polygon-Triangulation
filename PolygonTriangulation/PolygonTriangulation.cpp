@@ -86,11 +86,12 @@ void PolygonTriangulation::initVertexTypes() {
 				TurnVertex *previous = nullptr;
 				if (j > 0) previous = turnVertices[j - 1];
 				turnVertices.push_back(new TurnVertex(edge->originVertex, nullptr, previous));
+				determineVertexType(*turnVertices[j]->vertex, *edge->previous->originVertex, *edge->next->originVertex);
 				if (j > 0) turnVertices[j - 1]->next = turnVertices[j];
 				j++;
-				events.push(Event(EventType::START, edge->originVertex));
+				//events.push(Event(determineVertexType(*turnVertices[j - 1]), edge->originVertex));
 			} else {
-				events.push(Event(EventType::REGULAR, edge->originVertex));
+				//events.push(Event(EventType::REGULAR, edge->originVertex));
 			}
 		}
 		else {
@@ -99,40 +100,55 @@ void PolygonTriangulation::initVertexTypes() {
 				TurnVertex *previous = nullptr;
 				if (j > 0) previous = turnVertices[j - 1];
 				turnVertices.push_back(new TurnVertex(edge->originVertex, nullptr, previous));
+				determineVertexType(*turnVertices[j]->vertex, *edge->previous->originVertex, *edge->next->originVertex);
 				if (j > 0) turnVertices[j - 1]->next = turnVertices[j];
 				j++;
-				events.push(Event(EventType::START, edge->originVertex));
+				//events.push(Event(determineVertexType(*turnVertices[j-1]), edge->originVertex));
 			}
 			else {
-				events.push(Event(EventType::REGULAR, edge->originVertex));
+				//events.push(Event(EventType::REGULAR, edge->originVertex));
 			}
 		}
 	}
 	turnVertices[turnVertices.size() - 1]->next = turnVertices[0];
 	turnVertices[0]->previous = turnVertices[turnVertices.size() - 1];
+
+	cout << turnVertices[0]->previous->vertex->coordinates->x << " " << turnVertices[0]->previous->vertex->coordinates->y << " YHA\n";
 }
 
-void PolygonTriangulation::draw() {
-	glBegin(GL_LINE_LOOP);
-		for (int i = 0; i < faces.size(); i++) {
-			for (int j = 0; j < faces[i]->edges.size(); j++) {
-				Vertex *vertex = faces[i]->edges[j]->originVertex;
-				glVertex3f(vertex->coordinates->x * polygonScale, vertex->coordinates->y * polygonScale, 0);
-			}
+EventType PolygonTriangulation::determineVertexType(Vertex &vertex, Vertex &previous, Vertex &next) {
+	if (vertex < next && vertex < previous) {
+		if (next.coordinates->x >= vertex.coordinates->x &&
+			previous.coordinates->x <= vertex.coordinates->x) {
+			vertex.type = EventType::END;
+			return EventType::END;
 		}
-	glEnd();
-	glPointSize(8);
-	glBegin(GL_POINTS);
-		for (int i=0; i<turnVertices.size(); i++) {
-			glVertex3f(turnVertices[i]->vertex->coordinates->x*polygonScale, turnVertices[i]->vertex->coordinates->y*polygonScale, 0);
+		else {
+			vertex.type = EventType::MERGE;
+			return EventType::MERGE;
 		}
-	glEnd();
+	}
+	else if (next < vertex && previous < vertex) {
+		if (next.coordinates->x <= vertex.coordinates->x &&
+			previous.coordinates->x >= vertex.coordinates->x) {
+			vertex.type = EventType::START;
+			return EventType::START;
+		}
+		else {
+			vertex.type = EventType::SPLIT;
+			return EventType::SPLIT;
+		}
+	}
+	return EventType::REGULAR;
 }
 
 void PolygonTriangulation::makeMonotone() {
 	initVertexTypes();
+	/*for (int i = 0; i < turnVertices.size(); i++) {
+		turnVertices[i]->vertex->type = determineVertexType(*turnVertices[i]);
+	}*/
 	for (int i = 0; i < vertices.size(); i++) {
-
+		events.push(Event(vertices[i]->type, vertices[i]));
 	}
 	while (!events.empty()) {
 		std::cout << events.top().vertex->coordinates->x << " " << events.top().vertex->coordinates->y << std::endl;
@@ -140,10 +156,6 @@ void PolygonTriangulation::makeMonotone() {
 		events.pop();
 		checkVertexHandler(currentEvent);
 	}
-}
-
-EventType PolygonTriangulation::determineVertexType(TurnVertex *turnVertex) {
-
 }
 
 void PolygonTriangulation::checkVertexHandler(Event &event) {
@@ -184,4 +196,33 @@ void PolygonTriangulation::handleMergeVertex(Vertex *vertex) {
 
 void PolygonTriangulation::handleRegularVertex(Vertex *vertex) {
 
+}
+
+void PolygonTriangulation::draw() {
+	glBegin(GL_LINE_LOOP);
+	for (int i = 0; i < faces.size(); i++) {
+		for (int j = 0; j < faces[i]->edges.size(); j++) {
+			Vertex *vertex = faces[i]->edges[j]->originVertex;
+			glVertex3f(vertex->coordinates->x * polygonScale, vertex->coordinates->y * polygonScale, 0);
+		}
+	}
+	glEnd();
+	glPointSize(8);
+	glBegin(GL_POINTS);
+	for (int i = 0; i<turnVertices.size(); i++) {
+		if (turnVertices[i]->vertex->type == EventType::START) {
+			glColor3f(1, 0, 0);
+		} 
+		else if (turnVertices[i]->vertex->type == EventType::SPLIT) {
+			glColor3f(0, 1, 0);
+		}
+		else if (turnVertices[i]->vertex->type == EventType::END) {
+			glColor3f(0, 0, 1);
+		}
+		else if (turnVertices[i]->vertex->type == EventType::MERGE) {
+			glColor3f(1, 0, 1);
+		}
+		glVertex3f(turnVertices[i]->vertex->coordinates->x*polygonScale, turnVertices[i]->vertex->coordinates->y*polygonScale, 0);
+	}
+	glEnd();
 }
