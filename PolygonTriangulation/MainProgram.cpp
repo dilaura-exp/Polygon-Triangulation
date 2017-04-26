@@ -13,6 +13,8 @@ MainProgram::MainProgram() {
 	programState = ProgramState::RUNNING;
 	currentTime = SDL_GetTicks();
 	deltaTime = 0;
+
+	polygonTriangulation = new PolygonTriangulation();
 }
 
 MainProgram::~MainProgram() {
@@ -21,6 +23,8 @@ MainProgram::~MainProgram() {
 
 void MainProgram::run() {
 	initSystems();
+	polygonTriangulation->initPolygon();
+	polygonTriangulation->makeMonotone();
 	gameLoop();
 }
 
@@ -85,11 +89,9 @@ void MainProgram::drawGame() {
 	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
+	glLoadIdentity();
+	//glTranslatef(0, 0, 0);
+	polygonTriangulation->draw();
 
 	SDL_GL_SwapWindow(window);
-}
-
-void MainProgram::makeMonotone() {
-
 }

@@ -136,9 +136,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainProgram.cpp" />
     <ClCompile Include="picoPNG.cpp" />
+    <ClCompile Include="PolygonTriangulation.cpp" />
     <ClCompile Include="Random.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BinarySearchTree.h" />
     <ClInclude Include="DCEL.h" />
     <ClInclude Include="Errors.h" />
     <ClInclude Include="GLTexture.h" />
@@ -146,6 +148,7 @@
     <ClInclude Include="IOManager.h" />
     <ClInclude Include="MainProgram.h" />
     <ClInclude Include="picoPNG.h" />
+    <ClInclude Include="PolygonTriangulation.h" />
     <ClInclude Include="Random.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

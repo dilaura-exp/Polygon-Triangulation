@@ -1,5 +1,7 @@
 #pragma once
 
+//by mgechev
+
 #include <iostream>
 #include <math.h>
 

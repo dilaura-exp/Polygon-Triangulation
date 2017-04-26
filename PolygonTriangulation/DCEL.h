@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-struct Edge;
+class Edge;
 
 class Coordinates {
 public:
@@ -23,19 +23,12 @@ public:
 		this->coordinates = coordinates;
 		this->incidentEdge = incidentEdge;
 	}
-	bool operator < (const Vertex *vertex2) {
-		if (coordinates->y != vertex2->coordinates->y) {
-			return coordinates->y < vertex2->coordinates->y;
-		}
-		else {
-			return coordinates->x > vertex2->coordinates->x;
-		}
-	}
 };
 
 class Face {
 public:
 	std::vector<Edge*> edges;
+	Face() {}
 };
 
 class Edge {
