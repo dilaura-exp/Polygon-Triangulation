@@ -1,11 +1,11 @@
 #pragma once
-#include <DCEL.h>
 #include <GL/glew.h>
 #include <vector>
 #include <queue>
 #include <iostream>
 #include <string>
 
+#include "DCEL.h"
 #include "BinarySearchTree.h"
 
 class Event {
@@ -65,19 +65,14 @@ public:
 	void draw();
 	void initPolygon();
 	void initVertexTypes();
-	void makeMonotone();
-	void triangulateMonotone();
+	void makeMonotone(Polygon *polygon);
+	void triangulateMonotone(Polygon *polygon);
+
 private:
-	float polygonScale;
-	vector<Vertex*> vertices;
-	vector<Edge*> edges;
-	vector<Face*> faces;
+	Polygon *polygon;
 	priority_queue<Event, std::vector<Event>, EventComparator> events;
-	//BinarySearchTree<Status*> status;
 	vector<Status*> status;
 	vector<TurnVertex*> turnVertices;
-
-	int idGenerate;
 
 	void splitFace(Vertex *vertexFrom, Vertex *vertexTo);
 	Status* searchDirectlyLeftStatus(Vertex *vertex);
@@ -88,4 +83,6 @@ private:
 	void handleSplitVertex(Vertex *vertex);
 	void handleMergeVertex(Vertex *vertex);
 	void handleRegularVertex(Vertex *vertex);
+
+
 };

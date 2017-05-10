@@ -25,7 +25,7 @@ private:
 	float deltaTime;
 
 	void initSystems();
-	void gameLoop();
+	void programLoop();
 	void processInput();
 	void drawGame();
 

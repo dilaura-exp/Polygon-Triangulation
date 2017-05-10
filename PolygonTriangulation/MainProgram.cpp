@@ -23,9 +23,14 @@ MainProgram::~MainProgram() {
 
 void MainProgram::run() {
 	initSystems();
-	polygonTriangulation->initPolygon();
-	polygonTriangulation->makeMonotone();
-	gameLoop();
+
+	Polygon *polygon = new Polygon();
+	polygon->initPolygon();
+
+	polygonTriangulation->makeMonotone(polygon);
+	polygonTriangulation->triangulateMonotone(polygon);
+
+	programLoop();
 }
 
 void MainProgram::initSystems() {
@@ -52,7 +57,7 @@ void MainProgram::initSystems() {
 }
 
 
-void MainProgram::gameLoop() {
+void MainProgram::programLoop() {
 	while (programState != ProgramState::EXIT) {
 		oldTime = currentTime;
 		currentTime = SDL_GetTicks();

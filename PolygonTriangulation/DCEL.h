@@ -3,6 +3,8 @@
 #include <list>
 #include <string>
 
+using namespace std;
+
 extern enum EventType {
 	REGULAR, START, END, SPLIT, MERGE
 };
@@ -65,3 +67,15 @@ public:
 	}
 };
 
+class Polygon {
+public:
+	float polygonScale;
+	vector<Vertex*> vertices;
+	vector<Edge*> edges;
+	vector<Face*> faces;
+
+	Polygon();
+	~Polygon();
+
+	void initPolygon();
+};

@@ -1,13 +1,9 @@
 #include "PolygonTriangulation.h"
 #include <math.h>
 
-#define PI (3.141592653589793)
 
 PolygonTriangulation::PolygonTriangulation() {
-	idGenerate = 0;
-	polygonScale = 0.08f;
-	//cout << "status awal: " << status.size() << endl;
-	//status.clear();
+	//idGenerate = 0;
 }
 
 PolygonTriangulation::~PolygonTriangulation() {
@@ -15,112 +11,53 @@ PolygonTriangulation::~PolygonTriangulation() {
 }
 
 void PolygonTriangulation::draw() {
-	for (int i = 0; i < faces.size(); i++) {
+	glColor3f(1, 1, 1);
+	for (int i = 0; i < polygon->faces.size(); i++) {
 		//cout << "face: " << i << endl;
-		Edge *currentEdge = faces[i]->startingEdge;
+		Edge *currentEdge = polygon->faces[i]->startingEdge;
 		glBegin(GL_LINE_LOOP);
 		do {
 			//cout << currentEdge->id << endl;
 			Vertex *vertex = currentEdge->originVertex;
-			glVertex3f(vertex->coordinates->x * polygonScale, vertex->coordinates->y * polygonScale, 0);
+			glVertex3f(vertex->coordinates->x * polygon->polygonScale, vertex->coordinates->y * polygon->polygonScale, 0);
 			currentEdge = currentEdge->next;
-		} while (currentEdge != faces[i]->startingEdge);
+		} while (currentEdge != polygon->faces[i]->startingEdge);
 		glEnd();
 	}
 	glPointSize(8);
 	glBegin(GL_POINTS);
 	for (int i = 0; i<turnVertices.size(); i++) {
 		if (turnVertices[i]->vertex->type == EventType::START) {
-			glColor3f(1, 0, 0);
+			glColor3f(0.9f, 0.25f, 0.25f);
 		}
 		else if (turnVertices[i]->vertex->type == EventType::SPLIT) {
-			glColor3f(0, 1, 0);
+			glColor3f(0.25f, 0.9f, 0.25f);
 		}
 		else if (turnVertices[i]->vertex->type == EventType::END) {
-			glColor3f(0, 0, 1);
+			glColor3f(0.25f, 0.25f, 0.9f);
 		}
 		else if (turnVertices[i]->vertex->type == EventType::MERGE) {
-			glColor3f(1, 0, 1);
+			glColor3f(0.9f, 0.5f, 0.9f);
 		}
-		glVertex3f(turnVertices[i]->vertex->coordinates->x*polygonScale, turnVertices[i]->vertex->coordinates->y*polygonScale, 0);
+		glVertex3f(turnVertices[i]->vertex->coordinates->x*polygon->polygonScale, turnVertices[i]->vertex->coordinates->y*polygon->polygonScale, 0);
 	}
 	glEnd();
 }
 
 void PolygonTriangulation::initPolygon() {
-	vertices.push_back(new Vertex(new Coordinates(-9, -4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-6, -4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-6, -3), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-5, -3), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-5, -4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(9, -4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(9, 0), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(8, 0), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(8, 1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(9, 1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(9, 4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(5, 4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(5, 1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(6, 1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(6, 0), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(4, 0), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(4, 4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(2, 4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(2, 0), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(0, 0), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(0, 1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(1, 1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(1, 4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-5, 4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-5, 1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-2, 1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-2, 0), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-5, 0), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-5, -1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-6, -1), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-6, 4), nullptr));
-	vertices.push_back(new Vertex(new Coordinates(-9, 4), nullptr));
-
-	double rotation = 45 * PI / 180;
-	for (int i = 0; i < vertices.size(); i++) {
-		Coordinates *coordinate = vertices[i]->coordinates;
-		Coordinates newCoordinate = *coordinate;
-		newCoordinate.x = coordinate->x * cos(rotation) - coordinate->y * sin(rotation);
-		newCoordinate.y = coordinate->x * sin(rotation) + coordinate->y * cos(rotation);
-		coordinate->x = newCoordinate.x;
-		coordinate->y = newCoordinate.y;
-	}
-
-	faces.push_back(new Face());
-
-	for (int i = 0; i < vertices.size(); i++) {
-		Edge *previous = nullptr;
-		if (i > 0) previous = edges[i - 1];
-		edges.push_back(new Edge(vertices[i], nullptr, faces[0], nullptr, previous));
-		std::string name = "Edge-" + std::to_string(idGenerate++);
-		cout << name;
-		edges[i]->id = name;
-		if (i > 0) edges[i - 1]->next = edges[i];
-
-		vertices[i]->incidentEdge = edges[i];
-		//faces[0]->startingEdge.push_back(edges[i]);
-	}
-	edges[edges.size() - 1]->next = edges[0];
-	edges[0]->previous = edges[edges.size() - 1];
-	faces[0]->startingEdge = edges[0];
-	//cout << "ASD: " << edges[0]->originVertex->coordinates->x << endl;
+	
 }
 
 void PolygonTriangulation::initVertexTypes() {
-	bool upward = edges[1]->originVertex->coordinates->y > edges[0]->originVertex->coordinates->y;
+	bool upward = polygon->edges[1]->originVertex->coordinates->y > polygon->edges[0]->originVertex->coordinates->y;
 	int j = 0;	//turn vertex index
-	for (int i = 0; i < edges.size()+1; i++) {
+	for (int i = 0; i < polygon->edges.size()+1; i++) {
 		Edge *edge;
-		if (i == edges.size()) {
-			edge = edges[0];
+		if (i == polygon->edges.size()) {
+			edge = polygon->edges[0];
 		}
 		else {
-			edge = edges[i];
+			edge = polygon->edges[i];
 		}
 		if (upward) {
 			if (edge->next->originVertex->coordinates->y < edge->originVertex->coordinates->y) {
@@ -162,19 +99,19 @@ void PolygonTriangulation::splitFace(Vertex *vertexFrom, Vertex *vertexTo) {
 	Face *newFace = new Face();
 	Edge* edgeFrom = vertexFrom->incidentEdge;
 
-	Edge *newEdge1 = new Edge(vertexFrom, nullptr, faces[faces.size() - 1], vertexTo->incidentEdge, vertexFrom->incidentEdge->previous);
+	Edge *newEdge1 = new Edge(vertexFrom, nullptr, polygon->faces[polygon->faces.size() - 1], vertexTo->incidentEdge, vertexFrom->incidentEdge->previous);
 	newEdge1->previous->next = newEdge1;
 	newEdge1->next->previous = newEdge1;
-	newEdge1->id = "Edge-" + std::to_string(idGenerate++);
+	//newEdge1->id = "Edge-" + std::to_string(idGenerate++);
 	vertexFrom->incidentEdge = newEdge1;
 
 	Edge *newEdge2 = new Edge(vertexTo, newEdge1, newFace, edgeFrom, vertexTo->incidentEdge->previous);
 	newEdge2->previous->next = newEdge2;
 	newEdge2->next->previous = newEdge2;
-	newEdge2->id = "Edge-" + std::to_string(idGenerate++);
+	//newEdge2->id = "Edge-" + std::to_string(idGenerate++);
 	newEdge1->twinEdge = newEdge2;
 
-	faces.push_back(newFace);
+	polygon->faces.push_back(newFace);
 
 	newFace->startingEdge = newEdge2;
 	newEdge1->incidentFace->startingEdge = newEdge1;
@@ -218,10 +155,11 @@ EventType PolygonTriangulation::determineVertexType(Vertex &vertex, Vertex &prev
 	return EventType::REGULAR;
 }
 
-void PolygonTriangulation::makeMonotone() {
+void PolygonTriangulation::makeMonotone(Polygon *polygon) {
+	this->polygon = polygon;
 	initVertexTypes();
-	for (int i = 0; i < vertices.size(); i++) {
-		events.push(Event(vertices[i]->type, vertices[i]));
+	for (int i = 0; i < polygon->vertices.size(); i++) {
+		events.push(Event(polygon->vertices[i]->type, polygon->vertices[i]));
 	}
 	while (!events.empty()) {
 		std::cout << events.top().vertex->coordinates->x << " " << events.top().vertex->coordinates->y << std::endl;
@@ -351,6 +289,7 @@ void PolygonTriangulation::handleRegularVertex(Vertex *vertex) {
 }
 
 
-void PolygonTriangulation::triangulateMonotone() {
+void PolygonTriangulation::triangulateMonotone(Polygon *polygon) {
+	this->polygon = polygon;
 
 }
