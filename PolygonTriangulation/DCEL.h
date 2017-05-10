@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include <list>
+#include <string>
 
 extern enum EventType {
 	REGULAR, START, END, SPLIT, MERGE
@@ -41,12 +43,13 @@ public:
 
 class Face {
 public:
-	std::vector<Edge*> edges;
+	Edge* startingEdge;
 	Face() {}
 };
 
 class Edge {
 public:
+	std::string id;
 	Vertex *originVertex;
 	Edge *twinEdge;
 	Face *incidentFace;

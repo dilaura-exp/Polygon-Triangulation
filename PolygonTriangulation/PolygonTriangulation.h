@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <iostream>
+#include <string>
 
 #include "BinarySearchTree.h"
 
@@ -33,10 +34,13 @@ class Status {
 public:
 	Edge *edge;
 	Vertex *helper;
-
+	
 	Status(Edge *edge, Vertex *helper) {
 		this->edge = edge;
 		this->helper = helper;
+	}
+	bool operator > (const Status &status2) {
+		return edge->originVertex->coordinates->x > status2.edge->originVertex->coordinates->x;
 	}
 };
 
@@ -58,20 +62,25 @@ public:
 	PolygonTriangulation();
 	~PolygonTriangulation();
 
+	void draw();
 	void initPolygon();
 	void initVertexTypes();
-	void draw();
 	void makeMonotone();
-
+	void triangulateMonotone();
 private:
 	float polygonScale;
-	std::vector<Vertex*> vertices;
-	std::vector<Edge*> edges;
-	std::vector<Face*> faces;
-	std::priority_queue<Event, std::vector<Event>, EventComparator> events;
-	BinarySearchTree<Status*> status;
-	std::vector<TurnVertex*> turnVertices;
+	vector<Vertex*> vertices;
+	vector<Edge*> edges;
+	vector<Face*> faces;
+	priority_queue<Event, std::vector<Event>, EventComparator> events;
+	//BinarySearchTree<Status*> status;
+	vector<Status*> status;
+	vector<TurnVertex*> turnVertices;
 
+	int idGenerate;
+
+	void splitFace(Vertex *vertexFrom, Vertex *vertexTo);
+	Status* searchDirectlyLeftStatus(Vertex *vertex);
 	EventType determineVertexType(Vertex &vertex, Vertex &previous, Vertex &next);
 	void checkVertexHandler(Event &event);
 	void handleStartVertex(Vertex *vertex);
