@@ -3,12 +3,14 @@
 #define PI (3.141592653589793)
 
 Polygon::Polygon() {
-	polygonScale = 0.08f;
+	polygonScale = 0.05f;
 }
 
 Polygon::~Polygon() {
 
 }
+
+int Edge::idGenerated = 0;
 
 void Polygon::initPolygon() {
 	vertices.push_back(new Vertex(new Coordinates(-9, -4), nullptr));
@@ -44,6 +46,26 @@ void Polygon::initPolygon() {
 	vertices.push_back(new Vertex(new Coordinates(-6, 4), nullptr));
 	vertices.push_back(new Vertex(new Coordinates(-9, 4), nullptr));
 
+	/*vertices.push_back(new Vertex(new Coordinates(2, 5), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(2, 8.5f), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(3.5f, 8.5f), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(3.5f, 7), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(6.5f, 7), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(6.5f, 4), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(9, 4), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(9, 0), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(10.5f, 0), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(10.5f, 8), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(11, 8.5f), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(15, 8.5f), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(15, 11), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(10.5f, 11), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(10.5f, 16), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(5, 16), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(5, 11), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(0, 11), nullptr));
+	vertices.push_back(new Vertex(new Coordinates(0, 5), nullptr));*/
+
 	double rotation = 45 * PI / 180;
 	for (int i = 0; i < vertices.size(); i++) {
 		Coordinates *coordinate = vertices[i]->coordinates;
@@ -60,9 +82,7 @@ void Polygon::initPolygon() {
 		Edge *previous = nullptr;
 		if (i > 0) previous = edges[i - 1];
 		edges.push_back(new Edge(vertices[i], nullptr, faces[0], nullptr, previous));
-		/*std::string name = "Edge-" + std::to_string(idGenerate++);
-		cout << name;
-		edges[i]->id = name;*/
+		edges[i]->id = "Edge-" + Edge::generateId();
 		if (i > 0) edges[i - 1]->next = edges[i];
 
 		vertices[i]->incidentEdge = edges[i];

@@ -51,6 +51,7 @@ public:
 
 class Edge {
 public:
+	static int idGenerated;
 	std::string id;
 	Vertex *originVertex;
 	Edge *twinEdge;
@@ -65,6 +66,11 @@ public:
 		this->next = next;
 		this->previous = previous;
 	}
+
+	static string generateId() {
+		return std::to_string(idGenerated++);
+	}
+
 };
 
 class Polygon {

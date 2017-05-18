@@ -28,7 +28,6 @@ void MainProgram::run() {
 	polygon->initPolygon();
 
 	polygonTriangulation->makeMonotone(polygon);
-	polygonTriangulation->triangulateMonotone(polygon);
 
 	programLoop();
 }
@@ -65,7 +64,7 @@ void MainProgram::programLoop() {
 
 		processInput();
 		time += 10*deltaTime;
-		drawGame();
+		drawProgram();
 	}
 }
 
@@ -81,6 +80,7 @@ void MainProgram::processInput() {
 			case SDL_KEYDOWN:
 				switch (evnt.key.keysym.sym) {
 					case SDLK_SPACE:
+						polygonTriangulation->nextEvent();
 						break;
 				}
 				break;
@@ -90,7 +90,7 @@ void MainProgram::processInput() {
 	}
 }
 
-void MainProgram::drawGame() {
+void MainProgram::drawProgram() {
 	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

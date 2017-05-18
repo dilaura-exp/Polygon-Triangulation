@@ -66,6 +66,7 @@ public:
 	void initPolygon();
 	void initVertexTypes();
 	void makeMonotone(Polygon *polygon);
+	void nextEvent();
 	void triangulateMonotone(Polygon *polygon);
 
 private:
@@ -73,6 +74,9 @@ private:
 	priority_queue<Event, std::vector<Event>, EventComparator> events;
 	vector<Status*> status;
 	vector<TurnVertex*> turnVertices;
+	vector<Vertex**> verticesToSplit;
+
+	Vertex *highlighter;
 
 	void splitFace(Vertex *vertexFrom, Vertex *vertexTo);
 	Status* searchDirectlyLeftStatus(Vertex *vertex);
@@ -83,6 +87,8 @@ private:
 	void handleSplitVertex(Vertex *vertex);
 	void handleMergeVertex(Vertex *vertex);
 	void handleRegularVertex(Vertex *vertex);
+	int vertexPositionToEdge(Vertex *vertex, Edge *edge);
 
-
+	int *vertexDirections;
+	void initVertexDirections();
 };

@@ -27,7 +27,7 @@ private:
 	void initSystems();
 	void programLoop();
 	void processInput();
-	void drawGame();
+	void drawProgram();
 
 	PolygonTriangulation *polygonTriangulation;
 };
