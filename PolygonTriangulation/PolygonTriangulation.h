@@ -4,9 +4,13 @@
 #include <queue>
 #include <iostream>
 #include <string>
+#include <stack>
 
+#include "MainProgram.h"
 #include "DCEL.h"
 #include "BinarySearchTree.h"
+
+class MainProgram;
 
 class Event {
 public:
@@ -59,24 +63,26 @@ public:
 
 class PolygonTriangulation {
 public:
-	PolygonTriangulation();
+	PolygonTriangulation(MainProgram *mainProgram);
 	~PolygonTriangulation();
 
 	void draw();
 	void initPolygon();
 	void initVertexTypes();
 	void makeMonotone(Polygon *polygon);
-	void nextEvent();
-	void triangulateMonotone(Polygon *polygon);
+	void triangulateMonotone();
 
 private:
+	MainProgram *mainProgram;
 	Polygon *polygon;
 	priority_queue<Event, std::vector<Event>, EventComparator> events;
 	vector<Status*> status;
 	vector<TurnVertex*> turnVertices;
 	vector<Vertex**> verticesToSplit;
+	vector<Vertex**> verticesToSplit2;
 
-	Vertex *highlighter;
+	Vertex *debugVertex;
+	Edge *debugEdge;
 
 	void splitFace(Vertex *vertexFrom, Vertex *vertexTo);
 	Status* searchDirectlyLeftStatus(Vertex *vertex);
@@ -89,6 +95,10 @@ private:
 	void handleRegularVertex(Vertex *vertex);
 	int vertexPositionToEdge(Vertex *vertex, Edge *edge);
 
-	int *vertexDirections;
-	void initVertexDirections();
+	void initVertexDirections(vector<Edge*> &sortedEdges);
+	float distance(Coordinates *a, Coordinates *b);
+	bool checkRange(Coordinates *p, Coordinates *p1, Coordinates *p2);
+	bool isIntersecting(Coordinates *a1, Coordinates *a2, Coordinates *b1, Coordinates *b2);
+	float calculateAngle(Coordinates *a, Coordinates *b, Coordinates *c);
+	bool isInsidePolygon(Face *face, Edge *e1, Edge *e2);
 };

@@ -14,11 +14,15 @@ MainProgram::MainProgram() {
 	currentTime = SDL_GetTicks();
 	deltaTime = 0;
 
-	polygonTriangulation = new PolygonTriangulation();
+	polygonTriangulation = new PolygonTriangulation(this);
 }
 
 MainProgram::~MainProgram() {
 	
+}
+
+void MainProgram::draw() {
+	drawProgram();
 }
 
 void MainProgram::run() {
@@ -28,6 +32,7 @@ void MainProgram::run() {
 	polygon->initPolygon();
 
 	polygonTriangulation->makeMonotone(polygon);
+	polygonTriangulation->triangulateMonotone();
 
 	programLoop();
 }
@@ -80,7 +85,7 @@ void MainProgram::processInput() {
 			case SDL_KEYDOWN:
 				switch (evnt.key.keysym.sym) {
 					case SDLK_SPACE:
-						polygonTriangulation->nextEvent();
+						//polygonTriangulation->nextEvent(this);
 						break;
 				}
 				break;

@@ -6,12 +6,15 @@
 
 enum class ProgramState{RUNNING, EXIT};
 
+class PolygonTriangulation;
+
 class MainProgram {
 public:
 	MainProgram();
 	~MainProgram();
 
 	void run();
+	void draw();
 
 private:
 	SDL_Window* window;

@@ -2,8 +2,8 @@
 #include <math.h>
 
 
-PolygonTriangulation::PolygonTriangulation() {
-	//idGenerate = 0;
+PolygonTriangulation::PolygonTriangulation(MainProgram *mainProgram) {
+	this->mainProgram = mainProgram;
 }
 
 PolygonTriangulation::~PolygonTriangulation() {
@@ -13,11 +13,9 @@ PolygonTriangulation::~PolygonTriangulation() {
 void PolygonTriangulation::draw() {
 	glColor3f(1, 1, 1);
 	for (int i = 0; i < polygon->faces.size(); i++) {
-		//cout << "face: " << i << endl;
 		Edge *currentEdge = polygon->faces[i]->startingEdge;
 		glBegin(GL_LINE_LOOP);
 		do {
-			//cout << currentEdge->id << endl;
 			Vertex *vertex = currentEdge->originVertex;
 			glVertex3f(vertex->coordinates->x * polygon->polygonScale, vertex->coordinates->y * polygon->polygonScale, 0);
 			currentEdge = currentEdge->next;
@@ -41,19 +39,27 @@ void PolygonTriangulation::draw() {
 		}
 		glVertex3f(turnVertices[i]->vertex->coordinates->x*polygon->polygonScale, turnVertices[i]->vertex->coordinates->y*polygon->polygonScale, 0);
 	}
-	if (highlighter != nullptr) {
+	if (debugVertex != nullptr) {
 		glColor3f(1.0f, 1.0f, 1.0f);
-		glVertex3f(highlighter->coordinates->x*polygon->polygonScale, highlighter->coordinates->y*polygon->polygonScale, 0);
+		glVertex3f(debugVertex->coordinates->x*polygon->polygonScale, debugVertex->coordinates->y*polygon->polygonScale, 0);
 	}
 	glEnd();
 
 	glBegin(GL_LINES);
-		for (int i = 0; i < status.size(); i++) {
-			glColor3f(0.4f, 0.7f, 0.2f);
-			glVertex3f(status[i]->edge->originVertex->coordinates->x*polygon->polygonScale, status[i]->edge->originVertex->coordinates->y*polygon->polygonScale, 0);
-			glVertex3f(status[i]->edge->next->originVertex->coordinates->x*polygon->polygonScale, status[i]->edge->next->originVertex->coordinates->y*polygon->polygonScale, 0);
-		}
+	for (int i = 0; i < status.size(); i++) {
+		glColor3f(0.4f, 0.7f, 0.2f);
+		glVertex3f(status[i]->edge->originVertex->coordinates->x*polygon->polygonScale, status[i]->edge->originVertex->coordinates->y*polygon->polygonScale, 0);
+		glVertex3f(status[i]->edge->next->originVertex->coordinates->x*polygon->polygonScale, status[i]->edge->next->originVertex->coordinates->y*polygon->polygonScale, 0);
+	}
 	glEnd();
+
+	if (debugEdge != nullptr) {
+		glBegin(GL_LINES);
+			glColor3f(0.4f, 0.7f, 0.2f);
+			glVertex3f(debugEdge->originVertex->coordinates->x*polygon->polygonScale, debugEdge->originVertex->coordinates->y*polygon->polygonScale, 0);
+			glVertex3f(debugEdge->next->originVertex->coordinates->x*polygon->polygonScale, debugEdge->next->originVertex->coordinates->y*polygon->polygonScale, 0);
+		glEnd();
+	}
 }
 
 void PolygonTriangulation::initPolygon() {
@@ -80,9 +86,6 @@ void PolygonTriangulation::initVertexTypes() {
 				determineVertexType(*turnVertices[j]->vertex, *edge->previous->originVertex, *edge->next->originVertex);
 				if (j > 0) turnVertices[j - 1]->next = turnVertices[j];
 				j++;
-				//events.push(Event(determineVertexType(*turnVertices[j - 1]), edge->originVertex));
-			} else {
-				//events.push(Event(EventType::REGULAR, edge->originVertex));
 			}
 		}
 		else {
@@ -94,10 +97,6 @@ void PolygonTriangulation::initVertexTypes() {
 				determineVertexType(*turnVertices[j]->vertex, *edge->previous->originVertex, *edge->next->originVertex);
 				if (j > 0) turnVertices[j - 1]->next = turnVertices[j];
 				j++;
-				//events.push(Event(determineVertexType(*turnVertices[j-1]), edge->originVertex));
-			}
-			else {
-				//events.push(Event(EventType::REGULAR, edge->originVertex));
 			}
 		}
 	}
@@ -105,20 +104,48 @@ void PolygonTriangulation::initVertexTypes() {
 	turnVertices[0]->previous = turnVertices[turnVertices.size() - 1];
 }
 
+bool isInOrder(Vertex *vertexFrom, Vertex *vertexTo) {
+	int i = 0;
+	Vertex *currentVertex = vertexFrom;
+	while (currentVertex != vertexTo) {
+		currentVertex = currentVertex->incidentEdge->next->originVertex;
+		i++;
+		if (i >= 31) {
+			break;
+		}
+	}
+	int j = 0;
+	currentVertex = vertexTo;
+	while (currentVertex != vertexFrom) {
+		currentVertex = currentVertex->incidentEdge->next->originVertex;
+		j++;
+		if (j >= 31) {
+			break;
+		}
+	}
+	if (i < j) {
+		return true;
+	}
+	return false;
+}
+
 void PolygonTriangulation::splitFace(Vertex *vertexFrom, Vertex *vertexTo) {
+	if (!isInOrder(vertexFrom, vertexTo)) {
+		Vertex *temp = vertexFrom;
+		vertexFrom = vertexTo;
+		vertexTo = temp;
+	}
 	Face *newFace = new Face();
 	Edge* edgeFrom = vertexFrom->incidentEdge;
+	Edge* edge2Previous = vertexTo->incidentEdge->previous;
 
-	Edge *newEdge1 = new Edge(vertexFrom, nullptr, polygon->faces[polygon->faces.size() - 1], vertexTo->incidentEdge, vertexFrom->incidentEdge->previous);
+	Edge *newEdge1 = new Edge(vertexFrom, nullptr, edgeFrom->incidentFace, vertexTo->incidentEdge, vertexFrom->incidentEdge->previous);
 	newEdge1->previous->next = newEdge1;
 	newEdge1->next->previous = newEdge1;
-	newEdge1->id = "Edge-" + Edge::generateId();
-	vertexFrom->incidentEdge = newEdge1;
 
-	Edge *newEdge2 = new Edge(vertexTo, newEdge1, newFace, edgeFrom, vertexTo->incidentEdge->previous);
+	Edge *newEdge2 = new Edge(vertexTo, newEdge1, newFace, edgeFrom, edge2Previous);
 	newEdge2->previous->next = newEdge2;
 	newEdge2->next->previous = newEdge2;
-	newEdge2->id = "Edge-" + Edge::generateId();
 	newEdge1->twinEdge = newEdge2;
 
 	polygon->faces.push_back(newFace);
@@ -143,15 +170,15 @@ Status* PolygonTriangulation::searchDirectlyLeftStatus(Vertex *vertex) {
 
 EventType PolygonTriangulation::determineVertexType(Vertex &vertex, Vertex &previous, Vertex &next) {
 	if (vertex < next && vertex < previous) {
-		if (next.coordinates->x >= vertex.coordinates->x &&
-			previous.coordinates->x <= vertex.coordinates->x) {
-			vertex.type = EventType::END;
-			return EventType::END;
-		}
-		else {
-			vertex.type = EventType::MERGE;
-			return EventType::MERGE;
-		}
+			if (next.coordinates->x >= vertex.coordinates->x &&
+				previous.coordinates->x <= vertex.coordinates->x) {
+				vertex.type = EventType::END;
+				return EventType::END;
+			}
+			else {
+				vertex.type = EventType::MERGE;
+				return EventType::MERGE;
+			}
 	}
 	else if (next < vertex && previous < vertex) {
 		if (next.coordinates->x <= vertex.coordinates->x &&
@@ -168,27 +195,28 @@ EventType PolygonTriangulation::determineVertexType(Vertex &vertex, Vertex &prev
 }
 
 void PolygonTriangulation::makeMonotone(Polygon *polygon) {
-	this->polygon = polygon;
+	this->polygon = new Polygon(*polygon);
 	initVertexTypes();
 	for (int i = 0; i < polygon->vertices.size(); i++) {
 		events.push(Event(polygon->vertices[i]->type, polygon->vertices[i]));
 	}
-}
-
-void PolygonTriangulation::nextEvent() {
-	if (!events.empty()) {
+	while (!events.empty()) {
 		std::cout << std::endl << events.top().vertex->coordinates->x << " " << events.top().vertex->coordinates->y << std::endl;
 		Event currentEvent = events.top();
 		events.pop();
 		checkVertexHandler(currentEvent);
-		highlighter = currentEvent.vertex;
-		if (events.empty()) {
-			for (int i = 0; i < verticesToSplit.size(); i++) {
-				splitFace(verticesToSplit[i][0], verticesToSplit[i][1]);
-			}
-			cout << "face count: " << polygon->faces.size() << endl;
-			triangulateMonotone(polygon);
+		debugVertex = currentEvent.vertex;
+		mainProgram->draw();
+		getchar();
+	}
+
+	for (int i = 0; i < verticesToSplit.size(); i++) {
+		for (int j = 0; j < 2; j++) {
+			debugVertex = verticesToSplit[i][j];
+			mainProgram->draw();
+			getchar();
 		}
+		splitFace(verticesToSplit[i][0], verticesToSplit[i][1]);
 	}
 }
 
@@ -271,23 +299,19 @@ void PolygonTriangulation::handleMergeVertex(Vertex *vertex) {
 	cout << vertex->incidentEdge->id << endl;
 	cout << statusPreviousEdge->helper->incidentEdge->id << endl;
 	if (statusPreviousEdge->helper->type == EventType::MERGE) {
-		cout << "Previouz Edge" << endl;
 		Vertex **v = new Vertex*[2];
 		v[0] = vertex;
 		v[1] = statusPreviousEdge->helper;
 		verticesToSplit.push_back(v);
-		cout << vertex->incidentEdge->id << " and " << statusPreviousEdge->helper->incidentEdge->id << endl;
 	}
 	status.erase(status.begin() + i);
 	Status *leftStatus = searchDirectlyLeftStatus(vertex);
 	cout << leftStatus->helper->incidentEdge->id << endl;
 	if (leftStatus->helper->type == EventType::MERGE) {
-		cout << "Left Ztatuz" << endl;
 		Vertex **v = new Vertex*[2];
 		v[0] = vertex;
 		v[1] = leftStatus->helper;
 		verticesToSplit.push_back(v);
-		cout << vertex->incidentEdge->id << " and " << leftStatus->helper->incidentEdge->id << endl;
 	}
 	leftStatus->helper = vertex;
 }
@@ -295,7 +319,6 @@ void PolygonTriangulation::handleMergeVertex(Vertex *vertex) {
 void PolygonTriangulation::handleRegularVertex(Vertex *vertex) {
 	//if the interior of P lies to the right of vi
 	if (vertex->incidentEdge->next->originVertex->coordinates->y <= vertex->coordinates->y) {
-		cout << "LEFT" << endl;
 		Status *statusPreviousEdge = nullptr;
 		int i = status.size() - 1;
 		for (i = status.size() - 1; i >= 0; i--) {
@@ -304,13 +327,11 @@ void PolygonTriangulation::handleRegularVertex(Vertex *vertex) {
 				break;
 			}
 		}
-		cout << "Type: " << statusPreviousEdge->helper->type << endl;
 		if (statusPreviousEdge->helper->type == EventType::MERGE) {
 			Vertex **v = new Vertex*[2];
 			v[0] = vertex;
 			v[1] = statusPreviousEdge->helper;
 			verticesToSplit.push_back(v);
-			cout << vertex->incidentEdge->id << " and " << statusPreviousEdge->helper->incidentEdge->id << endl;
 		}
 		status.erase(status.begin() + i);
 		Status *newStatus = new Status(vertex->incidentEdge, vertex);
@@ -318,13 +339,11 @@ void PolygonTriangulation::handleRegularVertex(Vertex *vertex) {
 	}
 	else {
 		Status *leftStatus = searchDirectlyLeftStatus(vertex);
-		cout << "Type: " << leftStatus->helper->type << endl;
 		if (leftStatus->helper->type == EventType::MERGE) {
 			Vertex **v = new Vertex*[2];
 			v[0] = vertex;
 			v[1] = leftStatus->helper;
 			verticesToSplit.push_back(v);
-			cout << vertex->incidentEdge->id << " and " << leftStatus->helper->incidentEdge->id << endl;
 		}
 		leftStatus->helper = vertex;
 	}
@@ -346,16 +365,187 @@ int PolygonTriangulation::vertexPositionToEdge(Vertex *vertex, Edge *edge) {
 	}
 }
 
-void PolygonTriangulation::triangulateMonotone(Polygon *polygon) {
-	this->polygon = polygon;
-	vector<Vertex> sortedVertices;
-	for (int i = 0; i < polygon->vertices.size(); i++) {
-		sortedVertices.push_back(*polygon->vertices[i]);
-	}
-	sort(sortedVertices.begin(), sortedVertices.end());
-	reverse(sortedVertices.begin(), sortedVertices.end());
-
-	
+bool comparePointerToEdge(Edge *a, Edge *b) {
+	return (*a < *b);
 }
 
-void initVertexDirections();
+void PolygonTriangulation::triangulateMonotone() {
+	for (int i = 0; i < polygon->faces.size(); i++) {
+		vector<Edge*> sortedEdges;
+		Edge* currentEdge = polygon->faces[i]->startingEdge;
+		do {
+			cout << currentEdge->id << endl;
+			sortedEdges.push_back(currentEdge);
+			currentEdge = currentEdge->next;
+		} while (currentEdge != polygon->faces[i]->startingEdge);
+		sort(sortedEdges.begin(), sortedEdges.end(), comparePointerToEdge);
+		reverse(sortedEdges.begin(), sortedEdges.end());
+		initVertexDirections(sortedEdges);
+
+		stack<Edge*> s;
+		s.push(sortedEdges[0]);
+		s.push(sortedEdges[1]);
+		for (int j = 2; j < sortedEdges.size() - 1; j++) {
+			if (sortedEdges[j]->originVertex->chainDirection != s.top()->originVertex->chainDirection) {
+				while (s.size() > 1) {
+					Vertex **v = new Vertex*[2];
+					v[0] = sortedEdges[j]->originVertex;
+					v[1] = s.top()->originVertex;
+					verticesToSplit2.push_back(v);
+					s.pop();
+				}
+				s.pop();
+				s.push(sortedEdges[j - 1]);
+				s.push(sortedEdges[j]);
+			}
+			else {
+				Edge *lastEdge = s.top();
+				s.pop();
+				while (!s.empty()) {
+					lastEdge = s.top();
+					if (isInsidePolygon(polygon->faces[i], sortedEdges[j], s.top())) {
+						/*if (s.top()->incidentEdge->next->originVertex == sortedVertices[j] || s.top()->incidentEdge->previous->originVertex == sortedVertices[j]) {
+							s.pop();
+						}*/
+						Vertex **v = new Vertex*[2];
+						v[0] = sortedEdges[j]->originVertex;
+						v[1] = s.top()->originVertex;
+						verticesToSplit2.push_back(v);
+						s.pop();
+					}
+					else {
+						break;
+					}
+				}
+				s.push(lastEdge);
+				s.push(sortedEdges[j]);
+			}
+		}
+		while (!s.empty()) {
+			Vertex **v = new Vertex*[2];
+			v[0] = sortedEdges[sortedEdges.size() - 1]->originVertex;
+			v[1] = s.top()->originVertex;
+			verticesToSplit2.push_back(v);
+			s.pop();
+		}
+	}
+	for (int i = 0; i < verticesToSplit2.size(); i++) {
+		splitFace(verticesToSplit2[i][0], verticesToSplit2[i][1]);
+	}
+	debugVertex = nullptr;
+	debugEdge = nullptr;
+}
+
+void PolygonTriangulation::initVertexDirections(vector<Edge*> &sortedEdges) {
+	Edge *currentEdge = sortedEdges[0];
+	currentEdge->originVertex->chainDirection = 0;
+	currentEdge = currentEdge->next;
+	while (currentEdge != sortedEdges[sortedEdges.size()-1]) {
+		currentEdge->originVertex->chainDirection = -1;
+		currentEdge = currentEdge->next;
+	}
+	currentEdge = sortedEdges[sortedEdges.size()-1];
+	currentEdge->originVertex->chainDirection = 0;
+	currentEdge = currentEdge->next;
+	while (currentEdge != sortedEdges[0]) {
+		currentEdge->originVertex->chainDirection = 1;
+		currentEdge = currentEdge->next;
+	}
+}
+
+float PolygonTriangulation::distance(Coordinates *a, Coordinates *b) {
+	return sqrt(pow(b->x - a->x, 2) + pow(b->y - a->y, 2));
+}
+bool PolygonTriangulation::checkRange(Coordinates *p, Coordinates *p1, Coordinates *p2) {
+	if (distance(p, p1) <= 0.1f || distance(p, p2) <= 0.1f) {
+		return false;
+	}
+
+	bool intersectY = false;
+	if (p1->y > p2->y) {
+		if (p->y > p2->y && p->y < p1->y) {
+			intersectY = true;
+		}
+	}
+	else {
+		if (p->y > p1->y && p->y < p2->y) {
+			intersectY = true;
+		}
+	}
+
+	bool intersectX = false;
+	if (p1->x > p2->x) {
+		if (p->x > p2->x && p->x < p1->x) {
+			intersectX = true;
+		}
+	}
+	else {
+		if (p->x > p1->x && p->x < p2->x) {
+			intersectX = true;
+		}
+	}
+
+	return (intersectX && intersectY);
+}
+bool PolygonTriangulation::isIntersecting(Coordinates *a1, Coordinates *a2, Coordinates *b1, Coordinates *b2) {
+	float m1 = (a2->y - a1->y) / (a2->x - a1->x);
+	float c1 = a1->y - m1* a1->x;
+	float m2 = (b2->y - b1->y) / (b2->x - b1->x);
+	float c2 = b1->y - m2*b1->x;
+	float x = (c2 - c1) / (m1 - m2);
+	float y = m1 * x + c1;
+	Coordinates intersectionPoint(x, y);
+	if (checkRange(&intersectionPoint, b1, b2)
+		&& checkRange(&intersectionPoint, a1, a2)) {
+		cout << "OUTSIDE" << endl;
+		return true;
+	}
+}
+
+float PolygonTriangulation::calculateAngle(Coordinates *a, Coordinates *b, Coordinates *c) {
+	float by = b->y - a->y;
+	float bx = b->x - a->x;
+	float ay = b->y - c->y;
+	float ax = b->x - c->x;
+	float angle = (atan2(by, bx) - atan2(ay, ax)) * 180 / 3.141592653589793;
+
+	cout << "\nANGLE: " << angle << endl;
+	return angle;
+}
+
+bool PolygonTriangulation::isInsidePolygon(Face *face, Edge *e1, Edge *e2) {
+	debugVertex = e1->originVertex;
+	mainProgram->draw();
+	getchar();
+
+	debugVertex = e2->originVertex;
+	mainProgram->draw();
+
+	if (e1->originVertex->coordinates->x < e2->originVertex->coordinates->x) {
+		Edge *temp = e1;
+		e1 = e2;
+		e2 = temp;
+	}
+
+	float angle = calculateAngle(e1->originVertex->coordinates, e2->originVertex->coordinates, e2->previous->originVertex->coordinates);
+	if ((angle > 0 && angle < 180) || (angle < -180 && angle > -360)) {
+		cout << "OUTSIDE" << endl;
+		getchar();
+		return false;
+	}
+
+	Edge *currentEdge = face->startingEdge;
+	do {
+		if (isIntersecting(e1->originVertex->coordinates, e2->originVertex->coordinates, currentEdge->originVertex->coordinates, currentEdge->next->originVertex->coordinates)) {
+			debugEdge = currentEdge;
+			mainProgram->draw();
+			getchar();
+			return false;
+		}
+		currentEdge = currentEdge->next;
+	} while (currentEdge != face->startingEdge);
+
+	cout << "INSIDE" << endl;
+	getchar();
+	return true;
+}

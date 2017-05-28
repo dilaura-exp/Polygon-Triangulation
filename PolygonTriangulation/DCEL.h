@@ -27,6 +27,7 @@ public:
 	Coordinates *coordinates;
 	Edge *incidentEdge;
 	EventType type;
+	int chainDirection;
 
 	Vertex(Coordinates *coordinates, Edge *incidentEdge) {
 		this->coordinates = coordinates;
@@ -71,6 +72,18 @@ public:
 		return std::to_string(idGenerated++);
 	}
 
+	static void resetId() {
+		idGenerated = 0;
+	}
+
+	bool operator < (const Edge& edge2) const {
+		if (originVertex->coordinates->y != edge2.originVertex->coordinates->y) {
+			return originVertex->coordinates->y < edge2.originVertex->coordinates->y;
+		}
+		else {
+			return originVertex->coordinates->x > edge2.originVertex->coordinates->x;
+		}
+	}
 };
 
 class Polygon {

@@ -66,7 +66,7 @@ void Polygon::initPolygon() {
 	vertices.push_back(new Vertex(new Coordinates(0, 11), nullptr));
 	vertices.push_back(new Vertex(new Coordinates(0, 5), nullptr));*/
 
-	double rotation = 45 * PI / 180;
+	double rotation = 30 * PI / 180;
 	for (int i = 0; i < vertices.size(); i++) {
 		Coordinates *coordinate = vertices[i]->coordinates;
 		Coordinates newCoordinate = *coordinate;
